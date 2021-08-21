@@ -1,0 +1,228 @@
+1) Sync between git server and client
+1.1) Setup ssh without password
+# Generate public and private keys on the client
+ssh-keygen -t rsa
+# Copy the public key to the git server
+ssh-copy-id athichart@victorybattleship.local
+
+1.2) Initialize git repository on the server
+cd /Users/athichart/Google Drive/git
+mkdir <project>
+cd <project>
+git init --bare
+
+1.3) Upload initial content from a development workstation to the git server
+cd <project>
+git init
+git add -A
+git commit -m 'Initial commit'
+git remote add origin athichart@victorybattleship.local:/Users/athichart/Google\ Drive/git/<project>
+git push origin master --progress
+
+1.4) Clone a git repository from the git server
+git clone athichart@victorybattleship.local:/Users/athichart/Google\ Drive/git/<project>
+cd <project>
+git remote -v
+vim README
+git commit -am 'Fix for README file'
+git push origin master
+
+1.5) Update local
+git remote show origin
+git pull origin master
+
+1.6) Relative ref
+
+git checkout bugfix^            # Moving HEAD to the parent of bugfix
+git checkout bugfix~4           # Moving HEAD to the 4th parent of bugfix
+git branch -f master HEAD~3     # move by force the master to 3 parents behind HEAD
+
+1.7) Reversing change
+git reset reverts changes by moving a branch reference backwards in time to an older commit. In this sense you can think of it as "rewriting history;" git reset will move a branch backwards as if the commit had never been made in the first place. While resetting works great for local branches on your own machine, its method of "rewriting history" doesn't work for remote branches that others are using. In order to reverse changes and share those reversed changes with others, we need to use git revert.
+
+git reset HEAD~1                # Moving HEAD to HEAD~1
+git revert HEAD                 # Revert HEAD by commiting a unpatch of HEAD on top of HEAD
+
+1.8) Moving changes around
+
+1.8.1) Patch selected changes from other branches on top of main/HEAD. We can do
+  git rebase but that will collapse that branch into main while git cherry-pick lets
+  the other branches intact.
+
+git cherry-pick c1 c2 ...
+
+1.8.2) Interactive rebase: to selectively choose or re-order changes
+
+git rebase -i <branch>
+
+Use case:
+- we add printf and instrument code to debug and issue. Once we found a
+fix, we can use git cherry-pick or git rebase -i to choose only desired fixes
+and ignore all debug codes.
+
+- Given the change sequences, C1->C2->C3, we want to make change to C2. We can
+   1. use either git cherry-pick or git rebase -i to reorder C2 and C3. Now we
+      will have C1->C3->C2
+   2. modify C2
+   3. swap the order of C3 and c2 again.
+
+1.9) Describe changs from previous ref point (tag)
+
+git describe <branch>
+
+<latest_tag>_<no of commit>_g<current tag>
+
+1.10) git push
+#If git push fails b/c conflict, git pull and rebase first. Then git push again
+
+git pull -rebase ; git push
+
+1.11) Trick
+
+# This will create a local brnach, totallyNotMaster, that tracks the remote
+# branch origin/master
+
+git checkout -b totallyNotMaster origin/master
+git branch -u origin/master foo     # foo is optional if it is already checked out
+
+# Delete the branch foo from both local and remote
+git push origin :foo
+# It will create a local branch called foo
+git fetch origin :foo
+
+git pull origin master is equal to git fetch origin master + git merge origin/master
+git pull origin bar~:bugFix is equal to git fetch origin bar~:bugFix + git merge bugFix
+
+# Ignore certain files
+git config --global core.excludesfile ~/.gitignore_global
+
+1.12) Reference:
+https://git-scm.com/book/en/v2/Git-on-the-Server-Setting-Up-the-Server
+https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes
+https://learngitbranching.js.org/
+
+-----------------------------------------------------------------------------
+
+2) Generating a diff and patching a diff
+
+# Always fix bugs or create a new feature in a separate branch
+git clone git://github.com/ariejan/imdb.git
+cd imdb
+git checkout -b fix_empty_poster
+
+# Making a few commit and the show the log
+git log --pretty=oneline -3
+
+# Generating  a patch
+git format-patch master --stdout > fix_empty_poster.patch
+
+# Examining the patch
+git apply --stat fix_empty_poster.patch
+
+# Testing if we can patch cleanly
+git apply --check fix_empty_poster.patch
+
+# Patching the diff and signing off. The sigoff message will show in 'git log'
+git am --signoff < fix_empty_poster.patch
+
+Note : 'git apply' will only patch the diff but will not commit this code. As a result, the commit history will be lost.  'git am' will patch and commit the diff. So we will retain the commit history of the patch in our branch, as well.
+
+Reference
+https://www.devroom.io/2009/10/26/how-to-create-and-apply-a-patch-with-git/
+
+-----------------------------------------------------------------------------
+
+3) General use
+# Creating a new branch called feature_x
+git checkout -b feature_x
+
+# Switching back to master. It means moving HEAD to master.
+git checkout master
+
+# Deleting the branch feature_x
+git branch -d feature_x
+
+# Adding all new/modified files to the staging area
+git add -A .
+
+# Committing the change
+git commit -m 'commit message'
+
+# Replacing local change by the last content in HEAD when making mistake
+git checkout -- <filename>
+# Dropping all local change by fetching the lastest history from the server
+# and pointing the local master branch ot it.
+git fetch origin
+git reset --hard origin/master
+
+# Downloading changs from server and updating origin/master
+# Note: it doesn't move local master
+git fetch
+vs
+# Downloading changs from server, updating origin/master and moving local master
+# to origin/master.
+git pull
+# Note: git pull = git fetch + git cherry-pick o/master | git rebase o/master |
+                               git merge o/master
+# Difference b/w git rebase and git merge
+# Assume: c1 -> c2 -> c3 (origin/master)
+#               |
+#               c4 (master) 
+# git rebase : c1 -> c2 -> c3 (origin/master) -> c4' (master)
+#                    |
+#                    c4
+# git push will upload and move origin/master to c4'
+# git merge : c1 -> c2 -> c3 (origin/master) -> c5 (master)
+#                   |
+#                   c4
+# where c5 is the merged change of c4 and c3 which is a new change.
+
+# Merging another branch e.g. master. If the merge fails, we will have to edit the
+# conflicting files and adding the files to the staging area by ourselves.
+git merge <branch>
+
+# merge vs rebase : rebase has a clean history (a straight line) but it modifies the
+#history so we can have change c3 before c1.
+
+# Preview the change before merging
+git diff <source_branch> <target_branch>
+
+# Creating a tag for a software release
+git tag 1.0.0 1b2e1d63ff where 1b2e1d63ff is the 1st 10 digit of the commit id.
+
+# Showing commits by bob (each commit shown in one line)
+git log --pretty=oneline --author=bob
+# Showing commit tree decorated with the names of tags and branches
+git log --graph --oneline --decorate --all
+# Showing only which files have changed
+git log --name-status
+git log --help
+
+# Showing change before commiting (before adding)
+git diff master <speech_control.py
+git diff <file>
+git difftool -d HEAD speech_control.py
+
+# Showing change before commiting (after adding)
+git diff --cache <file>
+
+# Showing commited change
+git show 17944571f980b9df7fa5ea349e9cb0e09fc251f7
+
+# Git ignore
+~/.config/git/ignore or .gitignore in the repository
+
+# Move/rename files
+git mv oldfile newfile
+
+# Change the detail of previous commits
+git commit --amend
+
+Reference
+https://rogerdudler.github.io/git-guide/
+https://rogerdudler.github.io/git-guide/
+
+5) Config
+git config --global core.editor "vi"
+git config --global format.pretty oneline
+git config --global color.ui true
