@@ -1,0 +1,251 @@
+Country, data science, machine learning, deep learning
+Santa Elena, 100.0,100.0,52.0
+India, 99.0,77.0,25.0
+Rwanda,,,
+Lesotho,,,
+Singapore, 91.0,79.0,52.0
+Zimbabwe,,,
+Botswana ,,,
+Nepal, 77.0,49.0,
+Nigeria, 72.0,25.0,8.0
+Ethiopia,,,
+Ghana, 60.0 ,,
+Kenya, 60.0,27.0,
+Pakistan, 56.0,38.0,17.0
+Malawi ,,,
+Uganda,,,
+Hong Kong, 48.0,49.0,39.0
+United States, 48.0,30.0,15.0
+Cameroon,,,
+South Africa, 42.0,21.0,9.0
+Australia, 38.0,22.0,12.0
+Bangladesh, 37.0,39.0,15.0
+Zambia,,,
+Sri Lanka, 36.0,36.0,12.0
+United Arab Emirates, 36.0,20.0,9.0
+Mauricio,,,
+Ireland, 35.0,31.0,13.0
+Philippines, 34.0,14.0,6.0
+Canada, 32.0,28.0,15.0
+Namibia,,,
+Somalia,,,
+United Kingdom, 30.0,22.0,10.0
+Malaysia, 30.0,20.0,12.0
+Myanmar (Burma) ,,,
+Lebanon,,,
+Jamaica,,,
+Taste,,,
+Switzerland, 28.0,32.0,20.0
+Tanzania,,,
+Netherlands, 27.0,20.0,11.0
+Tunisia, 27.0,27.0,22.0
+Senegal,,,
+South Korea, 25.0,58.0,100.0
+New Zealand, 25.0,20.0,10.0
+Trinidad and Tobago,,,
+Cyprus,,,
+Côte d'Ivoire ,,,
+Laos,,,
+Luxembourg ,,,
+Madagascar,,,
+Afghanistan,,,
+Armenia,,,
+Oman,,,
+Macau ,,,
+Israel, 20.0,35.0,31.0
+Bahrain ,,,
+Iceland,,,
+Mongolia,,,
+Portugal, 17.0,18.0,8.0
+Greece, 17.0,17.0,8.0
+North Macedonia ,,,
+Serbia, 16.0,12.0,5.0
+Brunei ,,,
+Denmark, 15.0,23.0,10.0
+Austria, 15.0,16.0,11.0
+Germany, 15.0,18.0,13.0
+Norway, 15.0,24.0,13.0
+Morocco, 14.0,13.0,9.0
+Belgium, 14.0,15.0,10.0
+Egypt, 14.0,16.0,9.0
+Kuwait,,,
+Thailand, 13.0,10.0,5.0
+Puerto Rico,,,
+Sudan,,,
+New Caledonia ,,,
+Kosovo,,,
+Taiwan, 13.0,26.0,34.0
+Azerbaijan ,,,
+Jordan,,,
+Estonia,,,
+Albania ,,,
+Finland, 12.0,20.0,10.0
+Sweden, 12.0,23.0,13.0
+Iran, 12.0,17.0,15.0
+Saudi Arabia, 12.0,9.0,5.0
+Chile, 11.0,10.0,4.0
+Kazakhstan ,,,
+France, 11.0,12.0,10.0
+Angola ,,,
+Costa Rica,,,
+Indonesia, 10.0,8.0,4.0
+Croatia ,, 13.0,6.0
+Palestine,,,
+Cambodia,,,
+China, 10.0,27.0,36.0
+Spain, 10.0,11.0,6.0
+Belarus ,,,
+Uruguay,,,
+Italy, 9.0,10.0,5.0
+Slovenia,,,
+Vietnam, 9.0,13.0,7.0
+Brazil, 9.0,7.0,3.0
+Russia, 9.0,8.0,5.0
+Ukraine, 9.0,7.0,3.0
+Lithuania,,,
+Panama,,,
+Peru, 8.0,10.0,3.0
+Czechia, 8.0,13.0,7.0
+Kyrgyzstan ,,,
+Poland, 8.0,8.0,5.0
+Uzbekistan ,,,
+Georgia,,,
+Hungary, 8.0,8.0,7.0
+Latvia ,,,
+Honduras,,,
+Guatemala,,,
+Bosnia and Herzegovina,,,
+Bulgaria ,, 9.0,
+Colombia, 7.0,10.0,4.0
+Algeria ,, 9.0,9.0
+Bolivia ,,,
+Mexico, 6.0,6.0,2.0
+The Savior,,,
+Syria,,,
+Argentina, 6.0,6.0,2.0
+Romania, 6.0,11.0,5.0
+Dominican Republic,,,
+Ecuador,,,
+Moldova ,,,
+Slovakia,,,
+Paraguay ,,,
+Turkey, 4.0,6.0,5.0
+Iraq,,,
+Japan, 3.0,6.0,16.0
+Venezuela,,,
+North Korea,,,
+Kiribati ,,,
+American Samoa,,,
+Eritrea ,,,
+Montserrat ,,,
+Eswatini ,,,
+Palau ,,,
+Gambia,,,
+Micronesia ,,,
+Marshall Islands,,,
+Bhutan ,,,
+Solomon Islands,,,
+US Virgin Islands ,,,
+Old and bearded,,,
+Saint Kitts and Nevis,,,
+Northern Mariana Islands ,,,
+Liechtenstein ,,,
+Sao Tome and Principe ,,,
+Samoa ,,,
+Greenland ,,,
+Guyana ,,,
+Benin ,,,
+Papua New Guinea,,,
+Liberia,,,
+Belize ,,,
+Eel,,,
+British Virgin Islands ,,,
+Tonga ,,,
+Gibraltar,,,
+Burundi ,,,
+St. Vincent and the Grenadines,,,
+Guinea-Bissau ,,,
+Pomegranate,,,
+Vanuatu ,,,
+South Sudan,,,
+Barbados ,,,
+Guam ,,,
+Sint Maarten ,,,
+Congo ,,,
+Occidental Sahara,,,
+Cayman Islands,,,
+Malt,,,
+Turks and Caicos Islands,,,
+Sierra Leone,,,
+Togo ,,,
+Dutch Caribbean ,,,
+Bermuda ,,,
+San Martin,,,
+Niger,,,
+Isle of Man ,,,
+Fiji ,,,
+Aruba ,,,
+St. Lucia,,,
+Maldives,,,
+San Marino,,,
+Guernsey ,,,
+Cuba,,,
+Djibouti ,,,
+Haiti,,,
+San Bartolome,,,
+Sweater,,,
+Equatorial Guinea,,,
+Gabon,,,
+Chad,,,
+Curaçao ,,,
+Bahamas ,,,
+Democratic Republic of Congo,,,
+Seychelles ,,,
+Mozambique,,,
+Burkina Faso ,,,
+Dominica ,,,
+Surinam,,,
+Faroe Islands,,,
+Montenegro ,,,
+Cape Verde,,,
+Guinea,,,
+Mali ,,,
+Timor-Leste ,,,
+Andorra ,,,
+Turkmenistan ,,,
+Libya,,,
+Monaco,,,
+Tajikistan ,,,
+Nicaragua,,,
+French Polynesia ,,,
+Mauritania,,,
+French Guiana ,,,
+Yemen,,,
+Martinique,,,
+Guadalupe ,,,
+Meeting,,,
+Åland Islands ,,,
+Antarctica,,,
+French Southern Territories ,,,
+Bouvet Island ,,,
+Central African Republic,,,
+Cocos Islands ,,,
+Cook Islands ,,,
+Comoros ,,,
+Christmas Island ,,,
+Islas Malvinas (Falkland Islands) ,,,
+Heard and McDonald Islands ,,,
+British Indian Ocean Territory ,,,
+Mayotte ,,,
+Norfolk Island ,,,
+Niue ,,,
+Nauru ,,,
+Pitcairn Islands ,,,
+South Georgia and the South Sandwich Islands ,,,
+Svalbard and Jan Mayen ,,,
+Saint Peter and Miquelon ,,,
+Tokelau ,,,
+Tuvalu ,,,
+US Minor Outlying Islands ,,,
+Vatican City,,,
+Wallis and Futuna ,,,
