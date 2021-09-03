@@ -4,6 +4,7 @@
  * $Id: fifo.c,v 1.2 2002/11/18 09:29:38 tangpong Exp $
  */
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "fifo.h"
 

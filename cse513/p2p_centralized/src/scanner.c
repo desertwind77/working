@@ -1,17 +1,22 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "config.h"
 #include "fifo.h"
 #include "scanner.h"
 
 // Global variables
 char lexeme[MAX_TOKEN_LEN + 1];
-FILE *yyin;
+extern FILE *yyin;
 
 // Prototypes
+extern int yylex (void);
+extern int yywrap ( void );
 char *expect(int expected);
 
 char *title() 		{ return (char *)expect(RTITLE); }
-char *artist() 	{ return (char *)expect(RARTIST); } 
+char *artist() 	{ return (char *)expect(RARTIST); }
 char *country() 	{ return (char *)expect(RCOUNTRY); }
 char *company() 	{ return (char *)expect(RCOMPANY); }
 char *year() 		{ return (char *)expect(RYEAR); }
@@ -20,7 +25,7 @@ char *expect(int expected) {
 	int token, first = 1;
 	char *ptr, *buffer = (char *)malloc(MAX_TOKEN_LEN + 1);
 
-	sprintf(buffer, "");	
+	sprintf(buffer, "");
 	while((token = yylex()) != expected) {
 		if(!first) {
 			ptr = (char *)strdup(" ");
@@ -28,11 +33,11 @@ char *expect(int expected) {
 		} else {
 			first = 0;
 		}
-		
+
 		ptr = (char *)strdup(lexeme);
 		strcat(buffer, ptr);
 	}
-	
+
 	return buffer;
 }
 
@@ -45,7 +50,7 @@ int read_data(char *filename, fifo_t *key_list) {
 	token = yylex();
 	while(token != 0) {
 		if((token == TEXT) && !strcmp(lexeme, "key")){
-			object = (keys_t *)malloc(sizeof(key_t));
+			object = (keys_t *)malloc(sizeof(keys_t));
 
 			if((token = yylex()) == NUMBER) {
 				object->key = atoi(lexeme);
@@ -67,9 +72,9 @@ int read_data(char *filename, fifo_t *key_list) {
 
 			FIFO_enqueue(key_list, FIFO_element(object));
 
-			printf("Title = %s\n", object->title); 
-			printf("ARTIST = %s\n", object->artist); 
-			printf("COUNTRY = %s\n", object->country); 
+			printf("Title = %s\n", object->title);
+			printf("ARTIST = %s\n", object->artist);
+			printf("COUNTRY = %s\n", object->country);
 			printf("COMPANY = %s\n", object->company);
 			printf("YEAR = %s\n", object->year);
 			printf("\n");

@@ -2,8 +2,6 @@
  * client.c : P2P client
  */
 
-#include "config.h"
-#include "fifo.h"
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -15,8 +13,12 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
+#include "config.h"
+#include "fifo.h"
+#include "tcp.h"
 
 #define PORT 6001
 #define LISTENING_PORT 6022
@@ -30,18 +32,18 @@ struct search_result_t {
 
 
 // Prototype
-int read_data2(char *filename, fifo_t *key_list);
+int read_data(char *filename, fifo_t *key_list);
 void printbuffer(int *ptr, int count);
 void usage(char *command);
 void CB_marshal_key(fifo_queue_t *qq, void *arg);
-int CB_search_local_db(fifo_queue_t *qq, void *key); 
+int CB_search_local_db(fifo_queue_t *qq, void *key);
 keys_t *search_local_db(int key, fifo_t *key_list);
-int join(char *machine_name, int port, int node_id, fifo_t *key_list); 
-search_result_t *search(char *machine_name, int port, 
+int join(char *machine_name, int port, int node_id, fifo_t *key_list);
+search_result_t *search(char *machine_name, int port,
 		int node_id, int key);
 int leave(char *machine_name, int port, int node_id);
 int dead(char *machine_name, int port, int node_id);
-int leave_or_dead (short opcode, char *machine_name, 
+int leave_or_dead (short opcode, char *machine_name,
 		int port, int node_id);
 void *thr_func(void *ptr);
 int perform(int fd);
@@ -65,7 +67,7 @@ int main(int argc, char **argv) {
 		switch(opt) {
 			case 'd' : node_id = atoi(optarg); break;
 			case 'p' : server_port = atoi(optarg); break;
-			case '?' : 
+			case '?' :
 			default  : usage(argv[0]); exit(0);
 		}
 	}
@@ -82,8 +84,8 @@ int main(int argc, char **argv) {
 
 	// Demonstrate how to transmit data via the protocol
 	join(machine_name, server_port, node_id, key_list);
-       
-	listening_post();	
+
+	listening_post();
 }
 
 int listening_post() {
@@ -92,7 +94,7 @@ int listening_post() {
 	int		status, port, clilen;
 	fd_set 	watchset;
 	struct 	timeval tv;
- 
+
 	port = LISTENING_PORT;
 
 	// Open a TCP socket (an Internet stream socket.)
@@ -117,9 +119,9 @@ int listening_post() {
 	FD_SET(sockfd, &watchset);
 	tv.tv_sec = 10;
 	tv.tv_usec = 0;
- 
+
 	create_input_window_thread();
-         
+
 	for(;;) {
 		pthread_t *th;
 		int *para;
@@ -131,7 +133,7 @@ int listening_post() {
 
 		if(FD_ISSET(sockfd, &watchset) != 0) {
 			clilen=sizeof(cli_addr);
-			if((newsockfd = accept(sockfd, (struct sockaddr *) 
+			if((newsockfd = accept(sockfd, (struct sockaddr *)
 						&cli_addr,&clilen)) < 0) {
 				perror("Server: accept error\n");
 				return -1;
@@ -140,7 +142,7 @@ int listening_post() {
 			th = (pthread_t *)malloc(sizeof(pthread_t));
 			para = (int *)malloc(sizeof(int));
 			*para = newsockfd;
-		
+
 			pthread_create(th, NULL, thr_func, (void *)para);
 		} else {
 			FD_SET(sockfd, &watchset);
@@ -150,7 +152,7 @@ int listening_post() {
 
 void *thr_func(void *ptr) {
 	int sockfd = *((int *) ptr);
-  
+
 	perform(sockfd);
 	close(sockfd);
 	free(ptr);
@@ -159,14 +161,14 @@ void *thr_func(void *ptr) {
 
 int perform(int fd) {
 	short opcode;
-  
-	if (readn(fd, &opcode, sizeof(short))<0) {
+
+	if (readn(fd, (char *)&opcode, sizeof(short))<0) {
 		perror("Client: readn (at function perform) error\n");
       return -1;
     }
-	
+
 	switch(opcode) {
-      case GETDATA: get_data(fd);    
+      case GETDATA: get_data(fd);
 	}
 }
 
@@ -174,12 +176,12 @@ int send_data(int fd, char *value) {
 	int *sz;
 	char *data;
 
-	sz = (int* ) malloc (sizeof(int)); 
+	sz = (int* ) malloc (sizeof(int));
 	*sz = strlen(value);
 	data = (char *) malloc ((*sz) *sizeof(char));
 	strncpy(data,value,*sz);
 
-	if (writen(fd, sz, sizeof(int))<0 ) {
+	if (writen(fd, ( char *)sz, sizeof(int))<0 ) {
 		perror ("client: writen error \n");
 		return(-1);
 	}
@@ -192,31 +194,31 @@ int send_data(int fd, char *value) {
 
 int get_data(int fd) {
 	char *data;
-	int *sz; 
+	int *sz;
 	keys_t *object;
 	int key_no;
 
-	if (readn(fd, &key_no, sizeof(int))<0) {
+	if (readn(fd, (char*)&key_no, sizeof(int))<0) {
 		perror("Client: readn (at function get_data) error\n");
 		return -1;
 	}
 	printf("\n>>>>> Incoming request for a key: %d\n",key_no);
-  
+
 	// Search local DB
 	if((object = search_local_db(key_no, key_list)) != NULL) {
-		printf("Title = %s\n", object->title); 
-		printf("ARTIST = %s\n", object->artist); 
-		printf("COUNTRY = %s\n", object->country); 
+		printf("Title = %s\n", object->title);
+		printf("ARTIST = %s\n", object->artist);
+		printf("COUNTRY = %s\n", object->country);
 		printf("COMPANY = %s\n", object->company);
 		printf("YEAR = %s\n", object->year);
 		printf("\n");
-  
+
 		send_data(fd,object->title);
 		send_data(fd,object->artist);
 		send_data(fd,object->country);
 		send_data(fd,object->company);
 		send_data(fd,object->year);
-  
+
 		printf(">>>>> The requested packet has been sent ....... \n");
 		printf("Command shell [s/x] : ");
 	}
@@ -228,14 +230,14 @@ void create_input_window_thread() {
 
 	para = (int *) malloc (sizeof(int));
 	th = (pthread_t *) malloc(sizeof(pthread_t));
-	pthread_create(th,NULL,input_window_thread,(void *) para);  
+	pthread_create(th,NULL,input_window_thread,(void *) para);
 }
 
 void *input_window_thread(void *ptr) {
 	char command[3];
 	int wantedkey;
 	search_result_t *result;
-	
+
 	for (;;) {
 		printf("Command shell [s/x] : ");
 		scanf("%c",command);
@@ -243,12 +245,12 @@ void *input_window_thread(void *ptr) {
 			case 's':
 				printf("Search for: ");
 				scanf("%d",&wantedkey);
-				if( (result = search(machine_name, server_port, 
+				if( (result = search(machine_name, server_port,
 								node_id, wantedkey)) != NULL) {
-					printf("%d is in the client %d (%s)\n", wantedkey, 
+					printf("%d is in the client %d (%s)\n", wantedkey,
 							result->node_id, result->hostname);
-					request_data(result->hostname, result->node_id, 
-							wantedkey); 
+					request_data(result->hostname, result->node_id,
+							wantedkey);
 				} else {
 					printf("The key cant be found ..... \n");
 				}
@@ -258,9 +260,9 @@ void *input_window_thread(void *ptr) {
 				printf("Thank you for using our program ..... \n");
 				printf("Please dont make any segmentation fault !!!!, >:( \n");
 				exit(0);
-			default: 
-				printf("s = search ; x = leave \n");  
-		} 
+			default:
+				printf("s = search ; x = leave \n");
+		}
 	}
 
 	return 0;
@@ -270,8 +272,8 @@ int receive_data(int sockfd, char* note) {
 	int sz;
 	char *data;
 
-	if ( readn(sockfd, &sz, sizeof(int))<0) {
-		perror("Client: readn error \n");	
+	if ( readn(sockfd, (char *)&sz, sizeof(int))<0) {
+		perror("Client: readn error \n");
 	}
 
 	data = (char *) malloc (sz * sizeof(char));
@@ -285,29 +287,29 @@ int receive_data(int sockfd, char* note) {
 
 int request_data(char* m_name, int nodeid, int key) {
 	short opcode = GETDATA;
-	int sockfd = tcp_open(m_name, LISTENING_PORT); 
+	int sockfd = tcp_open(m_name, LISTENING_PORT);
 	int key_no = key;
-        
+
 	printf(">>>>> Trying to connect %s to request my data ..... \n",
-			m_name); 
+			m_name);
 
 	if (sockfd<0) {
 		printf(">>>>> Failed to connect the host machine ..... \n");
-		printf(">>>>> Tell the server the host machine is down .... \n"); 
+		printf(">>>>> Tell the server the host machine is down .... \n");
 		dead(machine_name, server_port, nodeid);
 		return(-1);
 	}
-       
+
 	// Send opcode
-	if( writen(sockfd, &opcode, sizeof(short))<0 ) {
+	if( writen(sockfd, ( char *)&opcode, sizeof(short))<0 ) {
 		perror("Client: writen error\n");
 		return(-1);
-	}   
+	}
 
 	// Send the key
-	if( writen(sockfd, &key_no, sizeof(int))<0 ) {
+	if( writen(sockfd, (char *)&key_no, sizeof(int))<0 ) {
 		perror("Client: writen error\n");
-		return(-1);      
+		return(-1);
 	}
 
    receive_data(sockfd,"Title");
@@ -315,12 +317,12 @@ int request_data(char* m_name, int nodeid, int key) {
    receive_data(sockfd,"COUNTRY");
    receive_data(sockfd,"COMPANY");
    receive_data(sockfd,"YEAR");
-	close(sockfd); 
+	close(sockfd);
 }
 
 // ------------------- Sub-routines ----------------------------------
 
-/* 
+/*
  * usage
  * Functionality : Print help message
  * Return Value : NONE
@@ -338,7 +340,7 @@ void usage(char *command) {
 /*
  * CB_marshal_key
  * Functionality : Arrange the keys in the key_list so as to be able
- *		to transfer to the server during joining 
+ *		to transfer to the server during joining
  * Return Value : NONE
  * Parameter :
  *		qq - an element in the key_list table
@@ -363,7 +365,7 @@ int CB_search_local_db(fifo_queue_t *qq, void *key) {
 
 		if(object->key == *((int *)key))
 			return 1;
-		else 
+		else
 			return 0;
 	}
 }
@@ -371,14 +373,14 @@ int CB_search_local_db(fifo_queue_t *qq, void *key) {
 keys_t *search_local_db(int key, fifo_t *key_list) {
 	fifo_queue_t *qq;
 
-	if((qq = FIFO_search2(key_list, CB_search_local_db, 
-					(void *)&key)) != NULL) 
+	if((qq = FIFO_search2(key_list, CB_search_local_db,
+					(void *)&key)) != NULL)
 		return (keys_t *)qq->ptr;
-	else 
+	else
 		return NULL;
 }
 
-/* join 
+/* join
 	Functionality: register the client to the server and publish the keys
 		of data that are hosted by the client.
 	Return Value: 1 if successful, otherwise -1
@@ -386,59 +388,59 @@ keys_t *search_local_db(int key, fifo_t *key_list) {
 		machine_name 	- server name
 		port				- server port
 		node_id			- client's node ID
-		key_list			- 
+		key_list			-
 */
 int join(char *machine_name, int port, int node_id, fifo_t *key_list) {
 	short opcode = JOIN;
-	int sockfd = tcp_open(machine_name, port); 
+	int sockfd = tcp_open(machine_name, port);
    int number,*buffer, *ptr;
 
 	number = FIFO_count(key_list);
 
 	// Send opcode
-	if( writen(sockfd, &opcode, sizeof(short))<0 ) {
+	if( writen(sockfd, (char *)&opcode, sizeof(short))<0 ) {
 		printf("Client: writen error\n");
 		return(-1);
-	}   
+	}
 
 	// Send node_id
-	if( writen(sockfd, &node_id, sizeof(int))<0 ) {
+	if( writen(sockfd, (char *)&node_id, sizeof(int))<0 ) {
 		printf("Client: writen error\n");
-		return(-1);     
+		return(-1);
 	}
 
    // Send the number of keys
-	if( writen(sockfd, &number, sizeof(int))<0 ) {
+	if( writen(sockfd, (char *)&number, sizeof(int))<0 ) {
 		printf("Client: writen error\n");
-		return(-1);      
+		return(-1);
 	}
 
 	// Send the list of keys
 	buffer = (int *)malloc(number*sizeof(int));
 	ptr = buffer;
-	FIFO_foreach2(key_list, CB_marshal_key, (void *)&ptr); 
+	FIFO_foreach2(key_list, CB_marshal_key, (void *)&ptr);
 
 #ifdef __DEBUG__
 	{ int i, *buffer2;
 		buffer2 = buffer;
-		for(i=0; i<number; i++) 
+		for(i=0; i<number; i++)
 			printf("%d ", *(buffer2)++);
 		printf("\n");
 	}
 #endif
 
-	if( writen(sockfd, buffer, number*sizeof(int))<0 ) {
+	if( writen(sockfd, ( char *)buffer, number*sizeof(int))<0 ) {
 		printf("Client: writen error\n");
-		return(-1);      
+		return(-1);
 	}
 
-	close(sockfd); 
+	close(sockfd);
 	return(0);
 }
 
-/* search 
+/* search
 	Functionality: search for a data with associated key
-	Return Value: Node Id and the hostname of the client 
+	Return Value: Node Id and the hostname of the client
 		hosting the data if found, otherwise NULL
 	Parameter:
 		machine_name 	- server name
@@ -446,46 +448,46 @@ int join(char *machine_name, int port, int node_id, fifo_t *key_list) {
 		node_id			- client's node ID
 		key				- the key to be searched for
 */
-search_result_t * search(char *machine_name, int port, 
+search_result_t * search(char *machine_name, int port,
 		int node_id, int key) {
 	short opcode = SEARCH;
-	int sockfd = tcp_open(machine_name, port); 
+	int sockfd = tcp_open(machine_name, port);
 	int result;
 
 	// Send opcode
-	if( writen(sockfd, &opcode, sizeof(short))<0 ) {
+	if( writen(sockfd, (char *)&opcode, sizeof(short))<0 ) {
 		printf("Client: writen error\n");
 		return NULL;
-	}   
+	}
 
 	// Send node_id
-	if( writen(sockfd, &node_id, sizeof(int))<0 ) {
+	if( writen(sockfd, ( char *)&node_id, sizeof(int))<0 ) {
 		printf("Client: writen error\n");
 		return NULL;
 	}
 
    // Send the key
-	if( writen(sockfd, &key, sizeof(int))<0 ) {
+	if( writen(sockfd, (char *)&key, sizeof(int))<0 ) {
 		printf("Client: writen error\n");
 		return NULL;
 	}
 
 	// Read the result back from the server
-	if( readn(sockfd, &result, sizeof(int))<0 ) {
+	if( readn(sockfd, (char *)&result, sizeof(int))<0 ) {
 		printf("Client: writen error\n");
 		return NULL;
 	}
 
-	// Read the hostname 
+	// Read the hostname
 	if(result != -1) {
 		search_result_t *res;
 		int size;
-		
+
 		res = (search_result_t *)malloc(sizeof(search_result_t));
 		res->node_id = result;
 
 		// Read the size
-		if( readn(sockfd, &size, sizeof(int))<0 ) {
+		if( readn(sockfd, (char *)&size, sizeof(int))<0 ) {
 			printf("Client: writen error\n");
 			return NULL;
 		}
@@ -499,7 +501,7 @@ search_result_t * search(char *machine_name, int port,
 
 		return res;
 	}
-	
+
 	return NULL;
 }
 
@@ -517,8 +519,8 @@ int leave(char *machine_name, int port, int node_id) {
 }
 
 /*
- * dead 
- * Functionality : Send a DEAD message to notify the server of the 
+ * dead
+ * Functionality : Send a DEAD message to notify the server of the
  * 	death of a client
  * Return Value : 1 if successful, otherwise -1
 	Parameter :
@@ -539,22 +541,22 @@ int dead(char *machine_name, int port, int node_id) {
 		port				- server port
 		node_id			- client's node ID
  */
-int leave_or_dead (short opcode, char *machine_name, 
+int leave_or_dead (short opcode, char *machine_name,
 		int port, int node_id) {
-	int sockfd = tcp_open(machine_name, port); 
+	int sockfd = tcp_open(machine_name, port);
 	int result;
 
 	// Send opcode
-	if( writen(sockfd, &opcode, sizeof(short))<0 ) {
+	if( writen(sockfd, (char *)&opcode, sizeof(short))<0 ) {
 		printf("Client: writen error\n");
 		return(-1);
-	}   
+	}
 
 	// Send node_id
-	if( writen(sockfd, &node_id, sizeof(int))<0 ) {
+	if( writen(sockfd, (char *)&node_id, sizeof(int))<0 ) {
 		printf("Client: writen error\n");
-		return(-1);     
+		return(-1);
 	}
-	
+
 	return 0;
 }

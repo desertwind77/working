@@ -7,7 +7,11 @@
 #ifndef __FIFO_H__
 #define __FIFO_H__
 
+#ifdef __PTHREAD__
+#include <pthread.h>
+#else
 #include <sys/lwp.h>
+#endif
 
 /* An ordinary singly link list */
 typedef struct queue_s fifo_queue_t;
