@@ -26,4 +26,4 @@ client:
 	$(CC) $(CFLAGS) $(LIBS) -o cli $(CLIENT)
 
 clean:
-	rm -f a.out *.o cli svc core
+	rm -f a.out *.o cli svc core src/lex.yy.c
