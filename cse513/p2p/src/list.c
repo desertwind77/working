@@ -3,34 +3,6 @@
 #include <stdlib.h>
 #include "fifo.h"
 
-// MALLOC
-// Functionality: allocate memory (usign malloc), and check error
-// Return value: The address of the memory allocated on success; otherwise NULL
-// Parameter:
-//    size - the size of memory to be allocated
-void * MALLOC(int size) {
-	void *temp;
-
-	if( (temp = (void *)malloc(size)) == NULL) {
-		fprintf(stderr, "[MALLOC] malloc error!\n");
-		exit(-1);
-	}
-
-	return temp;
-}
-
-/*
- * FREE
- * Functionality: free allocated memory, if not NULL
- * Return value: NONE
- * Paramter:
- * 	ptr - the pointer to be deallocated
- */
-void FREE(void *ptr) {
-	if(ptr != NULL)
-		free(ptr);
-}
-
 /*
  * FIFO_create
  * Functioanlity: Create a new FIFO
